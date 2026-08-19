@@ -171,22 +171,42 @@ Proof.
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+  induction n as [| n' IHn'].
+  - reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity. Qed.
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *)
+  intros n m. induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  (* 请在此处解答 *) Admitted.
-
+  (* 请在此处解答 *) 
+  intros n m. induction n as [| n' IHn'].
+  - rewrite <- plus_n_O. reflexivity.
+  - induction m as [| m' IHm'].
+   * rewrite <- plus_n_O. reflexivity.
+   * simpl. rewrite -> IHn'. rewrite <- plus_n_Sm. 
+     simpl. reflexivity.
+Qed.
+   
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *)
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - intros m p. simpl. rewrite -> plus_n_Sm.
+    rewrite -> plus_n_Sm. rewrite -> plus_n_Sm.
+    rewrite -> IHn'. reflexivity.
+Qed.
 (** [] *)
 
 (** **** 练习：2 星, standard (double_plus) 
@@ -203,7 +223,11 @@ Fixpoint double (n:nat) :=
 
 Lemma double_plus : forall n, double n = n + n .
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+  intros n. induction n as [| n' IHn'].
+  - reflexivity.
+  - simpl. rewrite -> IHn'. rewrite -> plus_n_Sm. 
+  reflexivity. Qed.
 (** [] *)
 
 (** **** 练习：2 星, standard, optional (evenb_S) 
@@ -215,14 +239,22 @@ Proof.
 Theorem evenb_S : forall n : nat,
   evenb (S n) = negb (evenb n).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+  induction n as [| n' IHn'].
+  - reflexivity.
+  - rewrite -> IHn'. simpl. rewrite -> negb_involutive.
+reflexivity. Qed.
 (** [] *)
 
 (** **** 练习：1 星, standard, optional (destruct_induction) 
 
     请简要说明一下 [destruct] 策略和 [induction] 策略之间的区别。
 
-(* 请在此处解答 *)
+(* [destruct] 和 [induction] 的区别：[destruct] 策略仅根据归纳类型的构造子
+   将目标分为若干子目标，但不会为递归情况提供归纳假设。而 [induction] 策略
+   不仅会将目标分为子目标，还会在归纳步中引入归纳假设，即假设命题对更小的
+   值成立。因此，[destruct] 适用于只需分类讨论的情况，而 [induction] 适用
+   于需要递归推理（即利用更小实例的性质来证明更大实例的性质）的情况。 *)
 *)
 
 (* 请勿修改下面这一行： *)
@@ -381,8 +413,31 @@ Proof.
 
     定理：加法满足交换律。
 
-    Proof: (* 请在此处解答 *)
-*)
+    证明：对 [n] 使用归纳法。
+
+    - 首先，设 [n = 0]。我们必须证明
+
+        0 + m = m + 0.
+
+      根据 [+] 的定义，[0 + m] 即为 [m]。而根据之前已证的定理，[m + 0 = m]。
+      因此等式两边均等于 [m]，结论成立。
+
+    - 然后，设 [n = S n']，其中
+
+        n' + m = m + n'.
+
+      我们必须证明
+
+        (S n') + m = m + (S n').
+
+      根据 [+] 的定义，[(S n') + m] 即为 [S (n' + m)]。而根据之前已证的定理，
+      [m + (S n') = S (m + n')]。因此我们只需证明
+
+        S (n' + m) = S (m + n'),
+
+      而这由归纳假设 [n' + m = m + n'] 直接得出。□ *)
+
+
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
@@ -395,8 +450,34 @@ Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 
     定理：对于任何 [n]，均有 [true = n =? n]。
 
-    证明： (* 请在此处解答 *)
+    证明：对 [n] 使用归纳法。
+
+    - 首先，设 [n = 0]。我们必须证明
+
+        true = 0 =? 0.
+
+      根据 [=?] 的定义，[0 =? 0] 即为 [true]，因此等式化为 [true = true]，
+      此结论显然成立。
+
+    - 然后，设 [n = S n']，其中
+
+        true = n' =? n'.
+
+      我们必须证明
+
+        true = S n' =? S n'.
+
+      根据 [=?] 的定义，[S n' =? S n'] 即为 [n' =? n']。
+      由归纳假设可知 [n' =? n' = true]，因此等式化为 [true = true]，
+      此结论显然成立。□
+
 *)
+Example eqb_refl_informal : forall n : nat, true = (n =? n).
+Proof.
+  induction n as [|n' IHn'].
+  - reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -409,15 +490,36 @@ Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 Theorem plus_swap : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+  intros n m p. rewrite -> plus_comm.
+  assert (H: n + p = p + n). 
+  { rewrite -> plus_comm. reflexivity. }
+  rewrite -> H. rewrite -> plus_assoc. reflexivity.
+Qed.
 
 (** 现在证明乘法交换律。（你在证明过程中可能想要定义并证明一个辅助定理。
     提示：[n * (1 + k)] 是什么？） *)
 
+Theorem mult_comm_pre : forall m k : nat,
+  m * (1 + k) = m + m * k.
+Proof.
+  intros m k. induction m as [|m' IHm'].
+  - simpl. reflexivity.
+  - simpl. assert (H: k + m' * k = m' * k + k).
+    { rewrite -> plus_comm. reflexivity. }
+    rewrite -> H. rewrite plus_assoc. rewrite <- IHm'. 
+    rewrite -> plus_comm. reflexivity.
+Qed.
+
 Theorem mult_comm : forall m n : nat,
   m * n = n * m.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+  intros m n. induction m as [|m' IHm'].
+  - rewrite -> mult_0_r. reflexivity.
+  - simpl. rewrite -> IHm'. rewrite -> mult_comm_pre. reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** 练习：3 星, standard, optional (more_exercises) 
@@ -431,31 +533,49 @@ Check leb.
 Theorem leb_refl : forall n:nat,
   true = (n <=? n).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+  intros n. induction n as [|n' IHn'].
+  - reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
 
 Theorem zero_nbeq_S : forall n:nat,
   0 =? (S n) = false.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *)
+  intros n. simpl. reflexivity.
+Qed.
+
 
 Theorem andb_false_r : forall b : bool,
   andb b false = false.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+  intros b. destruct b.
+  - reflexivity.
+  - reflexivity.
+Qed.
 
 Theorem plus_ble_compat_l : forall n m p : nat,
   n <=? m = true -> (p + n) <=? (p + m) = true.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *)
+  intros n m p. intros. induction p as [|p'].
+  - simpl. rewrite -> H. reflexivity.
+  - simpl. rewrite -> IHp'. reflexivity.
+Qed. 
 
 Theorem S_nbeq_0 : forall n:nat,
   (S n) =? 0 = false.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+reflexivity. Qed.
 
 Theorem mult_1_l : forall n:nat, 1 * n = n.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+intros n. simpl. rewrite -> plus_n_O. reflexivity.
+Qed.
 
 Theorem all3_spec : forall b c : bool,
     orb
@@ -464,17 +584,40 @@ Theorem all3_spec : forall b c : bool,
                (negb c))
   = true.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *)
+  intros [] [].
+  - reflexivity. - reflexivity. - reflexivity. - reflexivity.
+Qed.
 
 Theorem mult_plus_distr_r : forall n m p : nat,
   (n + m) * p = (n * p) + (m * p).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *)
+  intros n m p. induction p as [|p'].
+  - rewrite -> mult_0_r.  rewrite -> mult_0_r. 
+    rewrite -> mult_0_r. reflexivity.
+  - rewrite -> mult_comm_pre. rewrite -> IHp'. 
+    rewrite -> plus_assoc. rewrite -> mult_comm_pre.
+    rewrite -> mult_comm_pre. rewrite -> plus_assoc.
+    assert (H1: m + n * p' = n * p' + m).
+    { rewrite -> plus_comm. reflexivity. }
+    assert (H2: m + n * p' + m * p' = n * p' + m + m * p').
+    { rewrite -> H1. reflexivity. }
+    assert (H3: n + m + n * p' + m * p' = n + (m + n * p' + m * p')).
+    { rewrite -> plus_assoc. rewrite -> plus_assoc. reflexivity. }
+    rewrite -> H3. rewrite -> H2. rewrite -> plus_assoc. 
+    rewrite -> plus_assoc. reflexivity.
+Qed.
 
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+  intros n m p. induction n as [|n'].
+  - reflexivity.
+  - simpl. rewrite -> mult_plus_distr_r. 
+    rewrite -> IHn'. reflexivity.
+Qed.
 (** [] *)
 
 (** **** 练习：2 星, standard, optional (eqb_refl) 
@@ -486,7 +629,11 @@ Proof.
 Theorem eqb_refl : forall n : nat,
   true = (n =? n).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *)
+  intros. induction n as [|n'].
+  - reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
 (** [] *)
 
 (** **** 练习：2 星, standard, optional (plus_swap') 
@@ -502,7 +649,12 @@ Proof.
 Theorem plus_swap' : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *)
+  intros n m p. rewrite -> plus_assoc.
+  rewrite -> plus_assoc. replace (n + m) with (m + n).
+  - reflexivity.
+  - rewrite -> plus_comm. reflexivity.
+Qed.  
 (** [] *)
 
 (** **** 练习：3 星, standard, recommended (binary_commute) 
@@ -528,7 +680,27 @@ Proof.
     请自便！ *)
 
 (* 请在此处解答 *)
-
+Theorem bin_to_nat_pres_incr : forall b : bin,
+  bin_to_nat (incr b) = S (bin_to_nat b).
+Proof.
+ 
+  assert (H: forall n : nat, n + 1 = S n).
+  { intros n. rewrite -> plus_comm. reflexivity. }
+  induction b as [|b'|b''].  
+  - reflexivity.
+  - simpl. rewrite -> H. reflexivity.
+  - simpl. rewrite -> IHb''. 
+    replace (S (bin_to_nat b'' + (bin_to_nat b'' + 0) + 1)) 
+            with (bin_to_nat b'' + 1 + (bin_to_nat b'' + 0) + 1).
+    * rewrite <- plus_n_O. rewrite <- plus_n_O. 
+      rewrite <- H. rewrite <- plus_assoc. rewrite <- plus_assoc. 
+      rewrite <- plus_assoc. reflexivity.
+    * rewrite <- (H (bin_to_nat b'' + (bin_to_nat b'' + 0) + 1)).
+      rewrite <- plus_n_O.  rewrite <- plus_assoc. rewrite <- plus_assoc.
+      rewrite -> (plus_comm 1 (bin_to_nat b'' + 1)). rewrite -> plus_assoc.
+      rewrite -> plus_assoc. reflexivity.
+Qed.  
+   
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_binary_commute : option (nat*string) := None.
 (** [] *)
@@ -543,7 +715,11 @@ Definition manual_grade_for_binary_commute : option (nat*string) := None.
         numbers. *)
 
 Fixpoint nat_to_bin (n:nat) : bin
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+  (* 将本行替换成 ":= _你的_定义_ ." *):=
+  match n with
+  | O => Z
+  | S n' => incr (nat_to_bin n')
+  end.
 
 (** Prove that, if we start with any [nat], convert it to binary, and
     convert it back, we get the same [nat] we started with.  (Hint: If
@@ -553,7 +729,26 @@ Fixpoint nat_to_bin (n:nat) : bin
 
 Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) 
+  assert (H: forall n : nat, n + 1 = S n).
+  { intros n. rewrite -> plus_comm. reflexivity. }
+  intros n. induction n as [|n'].
+  - reflexivity.
+  - simpl.  rewrite <- IHn' at 2. 
+    assert (H1: forall b : bin, bin_to_nat (incr b) = S (bin_to_nat b)).
+    { 
+      intros b. induction b as [|b'|b''].
+      - reflexivity.
+      - simpl. rewrite <- plus_n_O. 
+        rewrite -> (plus_comm (bin_to_nat b' + bin_to_nat b') 1).
+        reflexivity.
+      - simpl. rewrite <- plus_n_O. rewrite <- plus_n_O. 
+        rewrite -> IHb''. rewrite <- H. rewrite <- (H (bin_to_nat b'' + bin_to_nat b'' + 1)).
+        rewrite <- plus_assoc. rewrite -> (plus_comm (1) ((bin_to_nat b'' + 1))).
+        rewrite -> plus_assoc. rewrite -> plus_assoc. reflexivity.
+    }
+    rewrite -> H1. reflexivity.
+Qed.
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_binary_inverse_a : option (nat*string) := None.
@@ -582,9 +777,72 @@ Definition manual_grade_for_binary_inverse_b : option (nat*string) := None.
         define this using [nat_to_bin] and [bin_to_nat]! *)
 
 (* 请在此处解答 *)
+Fixpoint normalize (b : bin) : bin :=
+  match b with
+  | Z => Z
+  | A b' => match normalize b' with
+            | Z => Z          (* 2 × 0 = 0, 去掉冗余的 A *)
+            | b'' => A b''    (* 非零则保留 *)
+            end
+  | B b' => B (normalize b')  (* B 总是贡献一个 1，不需要特殊处理 *)
+  end. 
+
+Definition double_bin (b : bin) : bin :=
+  match b with
+  | Z => Z
+  | _ => A (b)
+  end.
+
+Lemma double_incr_bin : forall b,
+  double_bin (incr b) = incr (incr (double_bin b)).
+Proof.
+  intro b. induction b.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+Lemma double_plus_one: forall b,
+  nat_to_bin (double b + 1) = B (nat_to_bin b).
+Proof.
+  intro b. induction b.
+  - reflexivity.
+  - simpl. rewrite -> IHb. reflexivity.
+Qed.
+
+Theorem bin_nat_bin : forall b, nat_to_bin (bin_to_nat b) = normalize b.
+Proof.
+  assert (H0: forall n : nat, nat_to_bin (double n) = double_bin (nat_to_bin n)).
+  {
+    intro n. induction n. 
+    * reflexivity.
+    * simpl. rewrite -> double_incr_bin. rewrite IHn. reflexivity.
+  }
+  assert (H1: forall b : bin, double (bin_to_nat b) = bin_to_nat (double_bin b)).
+  {
+    intro b0. destruct b0.
+    + reflexivity.
+    + simpl. rewrite <- plus_n_O. rewrite <- plus_n_O.
+      rewrite <- double_plus. rewrite <- double_plus. reflexivity.
+    + simpl. rewrite <- plus_n_O. rewrite <- plus_n_O. rewrite <- double_plus. 
+    rewrite <- double_plus. reflexivity.
+  }
+  intro b. induction b.
+  - reflexivity.
+  - replace (bin_to_nat (A b)) with (double (bin_to_nat b)).
+    + simpl. rewrite <- IHb. 
+      rewrite H0. destruct (nat_to_bin (bin_to_nat b)); reflexivity.
+    + simpl. rewrite double_plus. rewrite <- plus_n_O. reflexivity. 
+  - simpl. rewrite <- IHb. rewrite <- plus_n_O.
+    replace (B (nat_to_bin (bin_to_nat b))) with (nat_to_bin (bin_to_nat (double_bin b) + 1)).
+    + rewrite <- double_plus. rewrite H1. reflexivity.
+    + rewrite <- H1. remember (bin_to_nat b) as b'. 
+      rewrite double_plus_one. reflexivity.
+Qed.
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_binary_inverse_c : option (nat*string) := None.
+
 (** [] *)
 
 (* 2022-03-14 05:26:55 (UTC+00) *)
